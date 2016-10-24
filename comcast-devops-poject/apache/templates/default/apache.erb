@@ -1,0 +1,27 @@
+<VirtualHost *:80>
+  ServerAdmin  test@localhost.com
+  Redirect permanent / https://serverfqdn or ip/
+</VirtualHost>
+
+<VirtualHost *:443>
+  SSLEngine on
+  SSLProxyEngine on
+  SSLCertificateFile <%= @params[:certificate_file] %>
+  SSLCertificateKeyFile <%= @params[:private_file] %>
+  ServerAdmin  test@localhost.com
+  ProxyRequests     Off
+  ProxyPreserveHost On
+  AllowEncodedSlashes NoDecode
+  <Proxy *>
+      Order deny,allow
+      Allow from all
+  </Proxy>
+
+  LogLevel <%= @node['apache']['loglevel'] %>
+  CustomLog <%= @node['apache']['log_path'] %>/apache_access.log combined
+  ErrorLog <%= @node['apache']['log_path'] %>/apache_error.log
+
+  ProxyPassReverse  /  http://fqdn or ip/
+  RequestHeader set X-Forwarded-Proto "https"
+  RequestHeader set X-Forwarded-Port "443"
+</VirtualHost>
